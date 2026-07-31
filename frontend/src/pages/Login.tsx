@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export const SignIn: React.FC = () => {
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
@@ -6,14 +7,39 @@ export const SignIn: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
     const payload = authMethod === 'email' 
       ? { email, password } 
       : { phone, password };
-      
-    console.log('Sign In payload:', payload);
+
+    try {
+      const res = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Invalid credentials');
+      }
+
+      // Store JWT token and user info
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      alert('Login Successful!');
+    } catch (err: any) {
+      alert(err.message || 'Invalid credentials');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -120,11 +146,22 @@ export const SignIn: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-sm"
+            disabled={loading}
+            className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-sm disabled:opacity-50"
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
+
+        {/* Footer Link */}
+        <div className="text-center mt-6">
+          <p className="text-xs text-slate-500">
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-indigo-600 hover:underline font-medium">
+              Create Account
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
