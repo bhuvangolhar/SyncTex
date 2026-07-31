@@ -3,6 +3,7 @@ import { SignIn } from './pages/Login';
 import { SignUp } from './pages/Register';
 import { Welcome } from './pages/Welcome';
 import { Continue } from './pages/Continue';
+import { Dashboard } from './pages/Dashboard';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/create" element={<SignUp />} />
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/continue" element={<Continue />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

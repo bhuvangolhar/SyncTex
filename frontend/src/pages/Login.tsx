@@ -35,7 +35,7 @@ export const SignIn: React.FC = () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      navigate('/continue');
+      navigate('/dashboard');
     } catch (err: any) {
       alert(err.message || 'Invalid credentials');
     } finally {

@@ -71,7 +71,7 @@ export const SignUp: React.FC = () => {
       }
 
       alert('Sign Up Successful!');
-      navigate('/welcome');
+      navigate('/dashboard');
     } catch (err: any) {
       alert(err.message || 'Something went wrong during registration');
     } finally {

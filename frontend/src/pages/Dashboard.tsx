@@ -1,0 +1,406 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+interface UserData {
+  id?: number;
+  name?: string;
+  fullName?: string;
+  email?: string;
+  role?: string;
+  organization?: {
+    orgName?: string;
+  };
+}
+
+export const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<UserData | null>(null);
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+
+  // Load user data from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error('Failed to parse user data', err);
+      }
+    }
+  }, []);
+
+  // Update clock every second
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Calculate greeting based on local time
+  const getGreeting = () => {
+    const hour = currentTime.getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
+  const userName = user?.name || user?.fullName || user?.email?.split('@')[0] || 'User';
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+      {/* Top Header / Navigation Bar */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10 px-6 py-4 shadow-sm">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Brand & Greeting */}
+          <div className="flex items-center space-x-6">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Synctex</h1>
+            <div className="hidden sm:block border-l border-slate-200 pl-6">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-semibold text-slate-800">
+                  {getGreeting()}, {userName}
+                </span>
+                <span className="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-full font-medium border border-indigo-100">
+                  {user?.role || 'Admin'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {user?.organization?.orgName || 'Workspace Overview'}
+              </p>
+            </div>
+          </div>
+
+          {/* Clock & Profile Action */}
+          <div className="flex items-center space-x-4">
+            <div className="text-right hidden md:block bg-slate-50 px-3.5 py-1.5 rounded-lg border border-slate-200">
+              <div className="text-xs font-mono font-semibold text-slate-800">
+                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </div>
+              <div className="text-[10px] text-slate-500">
+                {currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-semibold flex items-center justify-center text-sm shadow-sm">
+                {userName.charAt(0).toUpperCase()}
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-xs font-medium text-slate-600 hover:text-red-600 bg-white border border-slate-200 hover:border-red-200 px-3 py-2 rounded-lg transition"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        
+        {/* KPI Metrics Row */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Total Active Tasks
+              <span className="text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">+12%</span>
+            </div>
+            <div className="text-3xl font-bold text-slate-900 mt-2">128</div>
+            <p className="text-xs text-slate-500 mt-1">24 completed this week</p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Projects In Progress
+              <span className="text-indigo-600 font-semibold bg-indigo-50 px-2 py-0.5 rounded-full">Active</span>
+            </div>
+            <div className="text-3xl font-bold text-slate-900 mt-2">14</div>
+            <p className="text-xs text-slate-500 mt-1">3 pending client review</p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Hours Logged
+              <span className="text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">+4.2h</span>
+            </div>
+            <div className="text-3xl font-bold text-slate-900 mt-2">164.5 <span className="text-sm font-normal text-slate-500">hrs</span></div>
+            <p className="text-xs text-slate-500 mt-1">Target: 180 hrs / month</p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Team Velocity
+              <span className="text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-full">On Track</span>
+            </div>
+            <div className="text-3xl font-bold text-slate-900 mt-2">92.4%</div>
+            <p className="text-xs text-slate-500 mt-1">Sprint completion rate</p>
+          </div>
+        </section>
+
+        {/* Analytics & Graphs Section */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Weekly Task Activity Line Chart */}
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">Weekly Task Completion Trend</h3>
+                <p className="text-xs text-slate-500">Output performance across the last 7 days</p>
+              </div>
+              <span className="text-xs bg-slate-100 text-slate-600 font-medium px-2.5 py-1 rounded-md">This Week</span>
+            </div>
+
+            {/* SVG Line Graph */}
+            <div className="h-56 w-full flex flex-col justify-end">
+              <svg className="w-full h-44 overflow-visible" viewBox="0 0 500 150">
+                <defs>
+                  <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+                {/* Background Grid Lines */}
+                <line x1="0" y1="0" x2="500" y2="0" stroke="#f1f5f9" strokeWidth="1" />
+                <line x1="0" y1="50" x2="500" y2="50" stroke="#f1f5f9" strokeWidth="1" />
+                <line x1="0" y1="100" x2="500" y2="100" stroke="#f1f5f9" strokeWidth="1" />
+                <line x1="0" y1="150" x2="500" y2="150" stroke="#f1f5f9" strokeWidth="1" />
+
+                {/* Filled Area */}
+                <path
+                  d="M 0,110 Q 80,40 160,80 T 320,30 T 500,60 L 500,150 L 0,150 Z"
+                  fill="url(#gradient)"
+                />
+                {/* Line Path */}
+                <path
+                  d="M 0,110 Q 80,40 160,80 T 320,30 T 500,60"
+                  fill="none"
+                  stroke="#4f46e5"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+                {/* Data Points */}
+                <circle cx="0" cy="110" r="4" fill="#4f46e5" className="hover:r-6 transition-all" />
+                <circle cx="80" cy="55" r="4" fill="#4f46e5" />
+                <circle cx="160" cy="80" r="4" fill="#4f46e5" />
+                <circle cx="240" cy="45" r="4" fill="#4f46e5" />
+                <circle cx="320" cy="30" r="4" fill="#4f46e5" />
+                <circle cx="410" cy="85" r="4" fill="#4f46e5" />
+                <circle cx="500" cy="60" r="4" fill="#4f46e5" />
+              </svg>
+
+              {/* X-Axis Labels */}
+              <div className="flex justify-between text-xs text-slate-400 mt-4 px-1">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+                <span>Sun</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Donut Chart: Task Distribution */}
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">Task Allocation</h3>
+              <p className="text-xs text-slate-500">Breakdown by current status</p>
+            </div>
+
+            {/* SVG Donut Chart */}
+            <div className="relative flex items-center justify-center my-4">
+              <svg className="w-36 h-36 transform -rotate-90" viewBox="0 0 36 36">
+                {/* Background Ring */}
+                <path
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="#f1f5f9"
+                  strokeWidth="3.8"
+                />
+                {/* Segment 1: Completed (55%) */}
+                <path
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="#4f46e5"
+                  strokeWidth="3.8"
+                  strokeDasharray="55, 100"
+                />
+                {/* Segment 2: In Progress (30%) */}
+                <path
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="#06b6d4"
+                  strokeWidth="3.8"
+                  strokeDasharray="30, 100"
+                  strokeDashoffset="-55"
+                />
+                {/* Segment 3: Pending (15%) */}
+                <path
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="#cbd5e1"
+                  strokeWidth="3.8"
+                  strokeDasharray="15, 100"
+                  strokeDashoffset="-85"
+                />
+              </svg>
+              <div className="absolute text-center">
+                <span className="block text-xl font-bold text-slate-900">128</span>
+                <span className="block text-[10px] uppercase tracking-wider text-slate-400 font-medium">Tasks</span>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="space-y-2 text-xs border-t border-slate-100 pt-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+                  <span className="text-slate-600">Completed</span>
+                </div>
+                <span className="font-semibold text-slate-900">55% (70)</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
+                  <span className="text-slate-600">In Progress</span>
+                </div>
+                <span className="font-semibold text-slate-900">30% (38)</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                  <span className="text-slate-600">Pending Review</span>
+                </div>
+                <span className="font-semibold text-slate-900">15% (20)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Data Table & Activity Feed Section */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Recent Tasks Table */}
+          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-semibold text-slate-900">Recent Workspace Tasks</h3>
+              <button className="text-xs text-indigo-600 hover:underline font-medium">View All Tasks</button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    <th className="py-3 px-2">Task Title</th>
+                    <th className="py-3 px-2">Assignee</th>
+                    <th className="py-3 px-2">Status</th>
+                    <th className="py-3 px-2 text-right">Priority</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  <tr>
+                    <td className="py-3 px-2 font-medium text-slate-800">Design Authentication Flow</td>
+                    <td className="py-3 px-2 text-slate-600">Sarah Jenkins</td>
+                    <td className="py-3 px-2">
+                      <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium text-[11px]">Completed</span>
+                    </td>
+                    <td className="py-3 px-2 text-right font-semibold text-slate-700">High</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-2 font-medium text-slate-800">API Gateway Integration</td>
+                    <td className="py-3 px-2 text-slate-600">Alex Rivera</td>
+                    <td className="py-3 px-2">
+                      <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-medium text-[11px]">In Progress</span>
+                    </td>
+                    <td className="py-3 px-2 text-right font-semibold text-slate-700">High</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-2 font-medium text-slate-800">PostgreSQL Migration Script</td>
+                    <td className="py-3 px-2 text-slate-600">Justin Eilish</td>
+                    <td className="py-3 px-2">
+                      <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-medium text-[11px]">In Review</span>
+                    </td>
+                    <td className="py-3 px-2 text-right font-semibold text-slate-700">Medium</td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 px-2 font-medium text-slate-800">User Profile Permissions UI</td>
+                    <td className="py-3 px-2 text-slate-600">Elena Rostova</td>
+                    <td className="py-3 px-2">
+                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-medium text-[11px]">Pending</span>
+                    </td>
+                    <td className="py-3 px-2 text-right font-semibold text-slate-700">Low</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Scrollable Activity Feed */}
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-900 mb-1">Activity Stream</h3>
+            <p className="text-xs text-slate-500 mb-4">Real-time team updates</p>
+
+            <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
+              <div className="flex space-x-3 text-xs">
+                <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center shrink-0">
+                  SJ
+                </div>
+                <div>
+                  <p className="text-slate-800"><span className="font-semibold text-slate-900">Sarah Jenkins</span> attached design assets to <span className="text-indigo-600">Auth Flow</span>.</p>
+                  <span className="text-[10px] text-slate-400">10 mins ago</span>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 text-xs">
+                <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center shrink-0">
+                  AR
+                </div>
+                <div>
+                  <p className="text-slate-800"><span className="font-semibold text-slate-900">Alex Rivera</span> created new endpoint <span className="font-mono text-[11px] bg-slate-100 px-1 py-0.5 rounded">POST /api/users</span>.</p>
+                  <span className="text-[10px] text-slate-400">25 mins ago</span>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 text-xs">
+                <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center shrink-0">
+                  BG
+                </div>
+                <div>
+                  <p className="text-slate-800"><span className="font-semibold text-slate-900">Maya Oliver</span> updated organization settings.</p>
+                  <span className="text-[10px] text-slate-400">1 hour ago</span>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 text-xs">
+                <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center shrink-0">
+                  ER
+                </div>
+                <div>
+                  <p className="text-slate-800"><span className="font-semibold text-slate-900">Elena Rostova</span> submitted weekly progress report.</p>
+                  <span className="text-[10px] text-slate-400">2 hours ago</span>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 text-xs">
+                <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center shrink-0">
+                  SY
+                </div>
+                <div>
+                  <p className="text-slate-800"><span className="font-semibold text-slate-900">System Bot</span> auto-backed up workspace database.</p>
+                  <span className="text-[10px] text-slate-400">5 hours ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  );
+};
