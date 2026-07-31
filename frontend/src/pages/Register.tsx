@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export const SignUp: React.FC = () => {
+  const navigate = useNavigate();
+
   const [fullName, setFullName] = useState('');
   const [orgName, setOrgName] = useState('');
   const [email, setEmail] = useState('');
@@ -10,11 +12,12 @@ export const SignUp: React.FC = () => {
   const [verifyPassword, setVerifyPassword] = useState('');
   const [agreedTerms, setAgreedTerms] = useState(false);
 
-  // Visibility Toggles
+  // Visibility Toggles & Loading State
   const [showPassword, setShowPassword] = useState(false);
   const [showVerifyPassword, setShowVerifyPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== verifyPassword) {
@@ -27,15 +30,47 @@ export const SignUp: React.FC = () => {
       return;
     }
 
-    const payload = {
-      fullName,
-      orgName,
-      email,
-      phone,
-      password,
-    };
+    setLoading(true);
 
-    console.log('Sign Up payload:', payload);
+    try {
+      // 1. Create Organization
+      const orgRes = await fetch('http://localhost:5000/api/organizations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, orgName }),
+      });
+      const orgData = await orgRes.json();
+
+      if (!orgRes.ok) {
+        throw new Error(orgData.message || 'Failed to create organization');
+      }
+
+      // 2. Register Admin User under the created Organization
+      const userRes = await fetch('http://localhost:5000/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: fullName,
+          email,
+          phone,
+          password,
+          role: 'ADMIN',
+          organizationId: orgData.data.id,
+        }),
+      });
+      const userData = await userRes.json();
+
+      if (!userRes.ok) {
+        throw new Error(userData.message || 'Failed to register user');
+      }
+
+      alert('Sign Up Successful! Please sign in.');
+      navigate('/login');
+    } catch (err: any) {
+      alert(err.message || 'Something went wrong during registration');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -109,7 +144,7 @@ export const SignUp: React.FC = () => {
             />
           </div>
 
-          {/* Password */}
+          {/* Set Password */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">
               Set Password
@@ -204,11 +239,22 @@ export const SignUp: React.FC = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-sm"
+            disabled={loading}
+            className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition duration-200 shadow-sm disabled:opacity-50"
           >
-            Sign Up
+            {loading ? 'Creating Account...' : 'Sign Up'}
           </button>
         </form>
+
+        {/* Footer Link */}
+        <div className="text-center mt-6">
+          <p className="text-xs text-slate-500">
+            Already have an account?{' '}
+            <Link to="/login" className="text-indigo-600 hover:underline font-medium">
+              Sign In
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
