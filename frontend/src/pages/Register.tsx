@@ -64,8 +64,14 @@ export const SignUp: React.FC = () => {
         throw new Error(userData.message || 'Failed to register user');
       }
 
-      alert('Sign Up Successful! Please sign in.');
-      navigate('/login');
+      // Save user data to localStorage for the welcome page
+      localStorage.setItem('user', JSON.stringify(userData.data || userData.user || userData));
+      if (userData.token) {
+        localStorage.setItem('token', userData.token);
+      }
+
+      alert('Sign Up Successful!');
+      navigate('/welcome');
     } catch (err: any) {
       alert(err.message || 'Something went wrong during registration');
     } finally {

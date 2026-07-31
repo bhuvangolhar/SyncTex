@@ -157,7 +157,7 @@ export const SignIn: React.FC = () => {
         <div className="text-center mt-6">
           <p className="text-xs text-slate-500">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-indigo-600 hover:underline font-medium">
+            <Link to="/create" className="text-indigo-600 hover:underline font-medium">
               Create Account
             </Link>
           </p>
