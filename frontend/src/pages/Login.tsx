@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export const SignIn: React.FC = () => {
+  const navigate = useNavigate();
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -34,7 +35,7 @@ export const SignIn: React.FC = () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      alert('Login Successful!');
+      navigate('/continue');
     } catch (err: any) {
       alert(err.message || 'Invalid credentials');
     } finally {
