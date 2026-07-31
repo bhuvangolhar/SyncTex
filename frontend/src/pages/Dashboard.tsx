@@ -18,6 +18,7 @@ export const Dashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
 
   // Load user data from localStorage
   useEffect(() => {
@@ -100,38 +101,53 @@ export const Dashboard: React.FC = () => {
       {/* Sidebar Navigation Component */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-30
-        w-64 bg-white border-r border-slate-200 flex flex-col justify-between
+        ${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-white border-r border-slate-200 flex flex-col justify-between
         transform transition-transform duration-200 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div>
           {/* Sidebar Header / Brand */}
-          <div className="h-20 px-6 flex items-center justify-between border-b border-slate-100">
-            <div className="flex items-center space-x-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-lg shadow-sm">
+          <div className={`h-20 px-3 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} border-b border-slate-100`}>
+            <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0">
                 S
               </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight text-slate-900">Synctex</h1>
-                <p className="text-[10px] text-slate-400 font-medium">WORKSPACE</p>
-              </div>
+              {!isSidebarCollapsed && (
+                <div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900">Synctex</h1>
+                  <p className="text-[10px] text-slate-400 font-medium">WORKSPACE</p>
+                </div>
+              )}
             </div>
-            {/* Close Button Mobile */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden text-slate-400 hover:text-slate-600 p-1 rounded-md"
-            >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+                title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                className="hidden lg:inline-flex text-slate-400 hover:text-slate-600 p-1 rounded-md"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isSidebarCollapsed ? 'M9 5l7 7-7 7' : 'M15 19l-7-7 7-7'} />
+                </svg>
+              </button>
+              {/* Close Button Mobile */}
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="lg:hidden text-slate-400 hover:text-slate-600 p-1 rounded-md"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Nav Items */}
           <nav className="p-4 space-y-1">
-            <div className="px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              Navigation
-            </div>
+            {!isSidebarCollapsed && (
+              <div className="px-3 pb-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                Navigation
+              </div>
+            )}
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               return (
@@ -142,19 +158,19 @@ export const Dashboard: React.FC = () => {
                     setIsMobileMenuOpen(false);
                   }}
                   className={`
-                    w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-semibold transition-all duration-150
+                    w-full flex items-center ${isSidebarCollapsed ? 'justify-center px-0 py-2.5' : 'justify-between px-3'} rounded-lg text-xs font-semibold transition-all duration-150
                     ${isActive 
                       ? 'bg-indigo-50 text-indigo-700 shadow-sm' 
                       : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}
                   `}
                 >
-                  <div className="flex items-center space-x-3">
+                  <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}`}>
                     <span className={isActive ? 'text-indigo-600' : 'text-slate-400'}>
                       {item.icon}
                     </span>
-                    <span>{item.label}</span>
+                    {!isSidebarCollapsed && <span>{item.label}</span>}
                   </div>
-                  {item.badge && (
+                  {!isSidebarCollapsed && item.badge && (
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                       isActive ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'
                     }`}>
@@ -169,25 +185,39 @@ export const Dashboard: React.FC = () => {
 
         {/* Sidebar Footer User Card */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 min-w-0">
+          <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+            <div className={`flex items-center ${isSidebarCollapsed ? 'justify-center' : 'space-x-3 min-w-0'}`}>
               <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-semibold flex items-center justify-center text-sm shadow-sm shrink-0">
                 {userName.charAt(0).toUpperCase()}
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-slate-800 truncate">{userName}</p>
-                <p className="text-[10px] text-slate-500 truncate">{user?.role || 'Admin'}</p>
-              </div>
+              {!isSidebarCollapsed && (
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-slate-800 truncate">{userName}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{user?.role || 'Admin'}</p>
+                </div>
+              )}
             </div>
-            <button
-              onClick={handleLogout}
-              title="Sign Out"
-              className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
+            {!isSidebarCollapsed ? (
+              <button
+                onClick={handleLogout}
+                title="Sign Out"
+                className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                onClick={handleLogout}
+                title="Sign Out"
+                className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       </aside>
