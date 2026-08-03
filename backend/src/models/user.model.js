@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
+const { sequelize } = require('../../config/db');
 const Organization = require('./organization.model');
 
 const User = sequelize.define('User', {
@@ -36,10 +36,13 @@ const User = sequelize.define('User', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: Organization,
+      model: 'Organizations', // Points directly to the Organizations table
       key: 'id',
     },
   },
+}, {
+  tableName: 'Users', // Explicitly locks table name to PascalCase
+  timestamps: true,   // Generates createdAt and updatedAt
 });
 
 // Relationships

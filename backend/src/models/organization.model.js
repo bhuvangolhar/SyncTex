@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
+const { sequelize } = require('../../config/db');
 
 const Organization = sequelize.define('Organization', {
   id: {
@@ -16,6 +16,9 @@ const Organization = sequelize.define('Organization', {
     allowNull: false,
     unique: true, // Prevents duplicate organization names
   },
+}, {
+  tableName: 'Organizations', // Explicitly locks table name to PascalCase
+  timestamps: true,          // Generates createdAt and updatedAt
 });
 
 module.exports = Organization;

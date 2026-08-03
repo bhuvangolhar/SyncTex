@@ -12,12 +12,14 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Name, email, password, and organizationId are required' });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     const orgExists = await Organization.findByPk(organizationId);
     if (!orgExists) {
       return res.status(404).json({ message: 'Organization not found' });
     }
 
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ where: { email: normalizedEmail } });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
@@ -26,9 +28,9 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = await User.create({
-      name,
-      email,
-      phone,
+      name: name.trim(),
+      email: normalizedEmail,
+      phone: phone ? phone.trim() : null,
       password: hashedPassword,
       role: role || 'EMPLOYEE',
       organizationId,
@@ -59,10 +61,18 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Email or phone, and password are required' });
     }
 
-    // Query by email if provided, otherwise query by phone
+    const queryCondition = email 
+      ? { email: email.toLowerCase().trim() } 
+      : { phone: phone.trim() };
+
     const user = await User.findOne({
-      where: email ? { email } : { phone },
-      include: [{ model: Organization, attributes: ['id', 'orgName', 'fullName'] }],
+      where: queryCondition,
+      include: [
+        {
+          model: Organization,
+          attributes: ['id', 'orgName', 'fullName']
+        }
+      ],
     });
 
     if (!user) {
@@ -93,7 +103,7 @@ exports.loginUser = async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
-        organization: user.Organization,
+        organization: user.Organization || null,
       },
     });
   } catch (error) {
@@ -101,12 +111,20 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+// Get Users by Organization
 exports.getUsersByOrganization = async (req, res) => {
   try {
     const { organizationId } = req.params;
+
+    const orgExists = await Organization.findByPk(organizationId);
+    if (!orgExists) {
+      return res.status(404).json({ message: 'Organization not found' });
+    }
+
     const users = await User.findAll({
       where: { organizationId },
       attributes: { exclude: ['password'] },
+      order: [['createdAt', 'DESC']]
     });
 
     return res.status(200).json({ data: users });

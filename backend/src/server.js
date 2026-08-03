@@ -1,11 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { connectDB, sequelize } = require('./config/db');
+const { connectDB } = require('../config/db');
 
-// Import Models
-const Organization = require('./models/organization.model');
-const User = require('./models/user.model');
+// Import Models to initialize associations
+require('./models/organization.model');
+require('./models/user.model');
 
 // Import Routes
 const organizationRoutes = require('./routes/organization.routes');
@@ -27,12 +27,23 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'SyncTex Backend API is running' });
 });
 
-// Connect DB & Sync
-connectDB().then(async () => {
-  await sequelize.sync({ alter: true });
-  console.log('Database synchronized with Organization & User models.');
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Start Server safely without sequelize.sync()
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
