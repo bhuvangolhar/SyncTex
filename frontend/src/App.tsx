@@ -4,6 +4,7 @@ import { SignUp } from './pages/Register';
 import { Welcome } from './pages/Welcome';
 import { Continue } from './pages/Continue';
 import { Dashboard } from './pages/Dashboard';
+import { Tasks } from './pages/Tasks';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/continue" element={<Continue />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/tasks" element={<Tasks />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
