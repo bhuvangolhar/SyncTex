@@ -5,6 +5,7 @@ import { Welcome } from './pages/Welcome';
 import { Continue } from './pages/Continue';
 import { Dashboard } from './pages/Dashboard';
 import { Tasks } from './pages/Tasks';
+import { Enquiries } from './pages/Enquiries';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/continue" element={<Continue />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/tasks" element={<Tasks />} />
+        <Route path="/dashboard/enquiry" element={<Enquiries />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
